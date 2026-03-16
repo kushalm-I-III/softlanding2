@@ -1,11 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { db } from "@/src/lib/db";
+import { db } from "@/lib/db";
 
 export default function LoginPage() {
-  const { user, isLoading, error, signIn, signOut, sendMagicCode } =
-    (db as any).useAuth?.() ?? {};
+  const { user, isLoading, error } = (db as any).useAuth?.() ?? {};
 
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
@@ -14,8 +13,9 @@ export default function LoginPage() {
 
   async function handleRequestCode(e: FormEvent) {
     e.preventDefault();
+    const sendMagicCode = (db as any).auth?.sendMagicCode;
     if (!sendMagicCode) return;
-    setStatus("Sending code...");
+    setStatus("Sending code…");
     try {
       await sendMagicCode({ email });
       setStatus("We emailed you a 6-digit code. Check your inbox.");
@@ -28,11 +28,12 @@ export default function LoginPage() {
 
   async function handleVerifyCode(e: FormEvent) {
     e.preventDefault();
-    if (!signIn) return;
-    setStatus("Verifying code...");
+    const signInWithMagicCode = (db as any).auth?.signInWithMagicCode;
+    if (!signInWithMagicCode) return;
+    setStatus("Verifying code…");
     try {
-      await signIn({ email, code });
-      setStatus("You’re in. Redirecting...");
+      await signInWithMagicCode({ email, code });
+      setStatus("You’re in. Redirecting…");
       // Next.js will usually redirect based on route usage; for MVP we rely on user navigating back.
     } catch (err) {
       console.error(err);
@@ -43,22 +44,22 @@ export default function LoginPage() {
   if (isLoading) {
     return (
       <div className="flex w-full items-center justify-center">
-        <p className="text-sm text-slate-300">Checking your session...</p>
+        <p className="text-sm text-slate-700">Checking your session...</p>
       </div>
     );
   }
 
   if (user) {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4 rounded-xl border border-sky-200/70 bg-white/80 p-6 shadow-lg shadow-sky-100/70 backdrop-blur">
         <h1 className="text-xl font-semibold">You’re already signed in</h1>
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-slate-700">
           You can start exploring guides and events, or sign out to switch
           accounts.
         </p>
         <button
-          onClick={() => signOut?.()}
-          className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-white"
+          onClick={() => (db as any).auth?.signOut?.()}
+          className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-slate-200 hover:bg-slate-800"
         >
           Sign out
         </button>
@@ -67,12 +68,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-xl border border-sky-200/70 bg-white/80 p-6 shadow-lg shadow-sky-100/70 backdrop-blur">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           Welcome to Softlanding
         </h1>
-        <p className="mt-2 text-sm text-slate-300">
+        <p className="mt-2 text-sm text-slate-700">
           Sign in with a magic code. No password to remember. We’ll email you a
           6-digit code to confirm it’s really you.
         </p>
@@ -87,23 +88,23 @@ export default function LoginPage() {
       {step === "email" && (
         <form onSubmit={handleRequestCode} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-slate-100">Email address</span>
+            <span className="font-medium text-slate-900">Email address</span>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@university.edu"
-              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-600">
               Using your university email helps event organizers understand real
               turnout.
             </span>
           </label>
           <button
             type="submit"
-            className="mt-2 inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-emerald-950 hover:bg-emerald-400"
+            className="mt-2 inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-sky-200 hover:bg-sky-500"
           >
             Email me a code
           </button>
@@ -113,7 +114,7 @@ export default function LoginPage() {
       {step === "code" && (
         <form onSubmit={handleVerifyCode} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-slate-100">
+            <span className="font-medium text-slate-900">
               Enter your 6-digit code
             </span>
             <input
@@ -124,29 +125,29 @@ export default function LoginPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="123456"
-              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-600">
               Check your inbox (and spam folder) for an email from Softlanding.
             </span>
           </label>
           <button
             type="submit"
-            className="mt-2 inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-emerald-950 hover:bg-emerald-400"
+            className="mt-2 inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-sky-200 hover:bg-sky-500"
           >
             Confirm and sign in
           </button>
           <button
             type="button"
             onClick={() => setStep("email")}
-            className="text-xs text-slate-400 underline hover:text-slate-200"
+            className="text-xs text-slate-600 underline hover:text-slate-950"
           >
             Use a different email
           </button>
         </form>
       )}
 
-      {status && <p className="text-xs text-slate-400">{status}</p>}
+      {status && <p className="text-xs text-slate-600">{status}</p>}
     </div>
   );
 }

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { InstantDBProvider } from "@instantdb/react";
-import schema from "../../instant.schema";
-
-const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID!;
+import { Navbar } from "@/components/Navbar";
+import { CloudBackground } from "@/components/CloudBackground";
 
 export const metadata: Metadata = {
   title: "Softlanding",
@@ -18,28 +16,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
-        <InstantDBProvider appId={APP_ID} schema={schema}>
-          <div className="flex min-h-screen flex-col">
-            <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
-              <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-semibold tracking-tight">
-                    Softlanding
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    For international students
-                  </span>
-                </div>
-              </div>
-            </header>
-            <main className="mx-auto flex w-full max-w-5xl flex-1 px-4 py-6">
+      <body className="min-h-screen bg-slate-50 text-slate-950 antialiased">
+        <CloudBackground />
+        <div className="relative z-10 flex min-h-screen flex-col">
+          <Navbar />
+          <main className="mx-auto flex w-full max-w-6xl flex-1 px-4 py-10">
+            <div className="w-full rounded-2xl border border-sky-200/70 bg-white/85 p-6 shadow-xl shadow-sky-100/80 backdrop-blur">
               {children}
-            </main>
-          </div>
-        </InstantDBProvider>
+            </div>
+          </main>
+        </div>
       </body>
     </html>
   );
 }
+
+
 
