@@ -47,9 +47,10 @@ export function Navbar() {
 
   return (
     <header className="border-b border-sky-200/70 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
+      <div className="mx-auto flex max-w-6xl items-center px-4 py-3">
+        {/* Left: logo + campus pill */}
+        <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <span className="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-sky-100 shadow-sm shadow-sky-200">
               <Image
                 src="/softlanding-logo-new.png"
@@ -59,17 +60,24 @@ export function Navbar() {
                 className="h-10 w-10 object-contain"
               />
             </span>
+          </Link>
+          <span className="hidden items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-medium text-sky-800 shadow-sm shadow-sky-100 sm:inline-flex">
+            {campusLabel}
+          </span>
+        </div>
+
+        {/* Center: brand only */}
+        <div className="flex flex-1 items-center justify-center">
+          <Link href="/" className="flex items-center">
             <span
               className={`${logoFont.className} text-xl font-extrabold tracking-tight text-slate-950`}
             >
               Softlanding
             </span>
-            <span className="hidden items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-medium text-sky-800 shadow-sm shadow-sky-100 sm:inline-flex">
-              {campusLabel}
-            </span>
           </Link>
         </div>
 
+        {/* Right: navigation and auth */}
         <nav className="flex items-center gap-2 text-sm">
           <Link
             href="/"
