@@ -3,6 +3,17 @@
 import { FormEvent, useState } from "react";
 import { db } from "@/lib/db";
 
+function getErrorMessage(err: unknown) {
+  if (!err) return null;
+  if (typeof err === "string") return err;
+  if (err instanceof Error) return err.message;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return "Unknown error";
+  }
+}
+
 export default function LoginPage() {
   const { user, isLoading, error } = (db as any).useAuth?.() ?? {};
 
@@ -13,8 +24,17 @@ export default function LoginPage() {
 
   async function handleRequestCode(e: FormEvent) {
     e.preventDefault();
+    if (!process.env.NEXT_PUBLIC_INSTANT_APP_ID) {
+      setStatus(
+        "Missing NEXT_PUBLIC_INSTANT_APP_ID. Add it in Vercel → Settings → Environment Variables, then redeploy.",
+      );
+      return;
+    }
     const sendMagicCode = (db as any).auth?.sendMagicCode;
-    if (!sendMagicCode) return;
+    if (!sendMagicCode) {
+      setStatus("Magic code auth is unavailable in this build.");
+      return;
+    }
     setStatus("Sending code…");
     try {
       await sendMagicCode({ email });
@@ -22,14 +42,26 @@ export default function LoginPage() {
       setStep("code");
     } catch (err) {
       console.error(err);
-      setStatus("Something went wrong sending the code. Please try again.");
+      setStatus(
+        getErrorMessage(err) ||
+          "Something went wrong sending the code. Please try again.",
+      );
     }
   }
 
   async function handleVerifyCode(e: FormEvent) {
     e.preventDefault();
+    if (!process.env.NEXT_PUBLIC_INSTANT_APP_ID) {
+      setStatus(
+        "Missing NEXT_PUBLIC_INSTANT_APP_ID. Add it in Vercel → Settings → Environment Variables, then redeploy.",
+      );
+      return;
+    }
     const signInWithMagicCode = (db as any).auth?.signInWithMagicCode;
-    if (!signInWithMagicCode) return;
+    if (!signInWithMagicCode) {
+      setStatus("Magic code auth is unavailable in this build.");
+      return;
+    }
     setStatus("Verifying code…");
     try {
       await signInWithMagicCode({ email, code });
@@ -37,7 +69,7 @@ export default function LoginPage() {
       // Next.js will usually redirect based on route usage; for MVP we rely on user navigating back.
     } catch (err) {
       console.error(err);
-      setStatus("Code was invalid or expired. Try again.");
+      setStatus(getErrorMessage(err) || "Code was invalid or expired. Try again.");
     }
   }
 
